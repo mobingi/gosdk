@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mobingi/gosdk/pkg/client"
+	"github.com/mobingi/gosdk/pkg/httpclient"
 	"github.com/pkg/errors"
 )
 
@@ -65,7 +65,7 @@ type Config struct {
 
 	// HttpClientConfig will set the config for the session's http client. Do not
 	// set if you want to use http client defaults.
-	HttpClientConfig *client.Config
+	HttpClientConfig *httpclient.Config
 }
 
 type Session struct {
@@ -98,7 +98,6 @@ func (s *Session) SimpleAuthRequest(m, u string, body io.Reader) *http.Request {
 func (s *Session) getAccessToken() (string, error) {
 	var token string
 	var p authPayload
-
 	if s.Config.Username != "" {
 		if s.Config.Password == "" {
 			return token, errors.New("password cannot be empty")
@@ -130,12 +129,11 @@ func (s *Session) getAccessToken() (string, error) {
 
 	r.Header.Add("Content-Type", "application/json")
 
-	var c client.HttpClient
-
+	var c httpclient.HttpClient
 	if s.Config.HttpClientConfig != nil {
-		c = client.NewSimpleHttpClient(s.Config.HttpClientConfig)
+		c = httpclient.NewSimpleHttpClient(s.Config.HttpClientConfig)
 	} else {
-		c = client.NewSimpleHttpClient()
+		c = httpclient.NewSimpleHttpClient()
 	}
 
 	resp, body, err := c.Do(r)
