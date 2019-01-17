@@ -1,6 +1,7 @@
 package session
 
 import (
+	"log"
 	"os"
 	"testing"
 )
@@ -49,5 +50,7 @@ func TestNewSessionDevAcct(t *testing.T) {
 		if s.AccessToken == "" {
 			t.Errorf("Should have token, got empty")
 		}
+
+		log.Println(s)
 	}
 }
