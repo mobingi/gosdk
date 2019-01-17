@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mobingi/sdk-go/pkg/util/simplelog"
+	"github.com/mobingi/gosdk/pkg/util/simplelog"
 	"github.com/pkg/errors"
 )
 

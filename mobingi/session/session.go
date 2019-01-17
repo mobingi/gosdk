@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mobingi/sdk-go/pkg/client"
+	"github.com/mobingi/gosdk/pkg/client"
 	"github.com/pkg/errors"
 )
 
