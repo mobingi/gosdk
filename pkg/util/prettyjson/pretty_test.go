@@ -23,7 +23,7 @@ type t2 struct {
 	St1 []t1
 }
 
-func TestJSON(t *testing.T) {
+func TestDo(t *testing.T) {
 	mck := t2{
 		M: map[string]string{"one": "1", "two": "2"},
 		I: 100,
@@ -38,7 +38,7 @@ func TestJSON(t *testing.T) {
 
 	// test marshal
 	mck.St1 = append(mck.St1, t1{S: "hello"})
-	s := JSON(mck, 2)
+	s := Do(mck, 2)
 	if len(s) == 0 {
 		t.Errorf("Not expecting an empty result")
 	}

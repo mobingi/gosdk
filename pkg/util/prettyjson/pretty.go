@@ -16,8 +16,8 @@ func Indent(count int) string {
 	return pad
 }
 
-// JSON returns a prettified JSON string of `v`.
-func JSON(v interface{}, indent int) string {
+// Do returns a prettified JSON string of `v`.
+func Do(v interface{}, indent int) string {
 	var out bytes.Buffer
 	var b []byte
 
