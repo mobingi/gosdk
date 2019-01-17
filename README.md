@@ -2,5 +2,5 @@
 
 To install:
 ```bash
-$ go get -u -v github.com/mobingi/gosdk
+$ go get -u -v github.com/mobingi/sdk-go
 ```
