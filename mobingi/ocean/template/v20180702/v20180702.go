@@ -57,9 +57,3 @@ type Stack struct {
 	DmExtra      string        `json:"dmExtra" yaml:"dmExtra"`
 	ArmExtra     string        `json:"armExtra" yaml:"armExtra"`
 }
-
-// KeyValue is pair of named values
-type KeyValue struct {
-	Key   string `json:"key" yaml:"key"`
-	Value string `json:"value" yaml:"value"`
-}
