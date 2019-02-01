@@ -119,15 +119,11 @@ func (s *Session) getAccessToken() (string, error) {
 	}
 
 	payload, err := json.Marshal(p)
-	r, err := http.NewRequest(
-		http.MethodPost,
-		s.ApiEndpoint()+"/access_token",
-		bytes.NewBuffer(payload))
+	accessTokenUrl := s.ApiEndpoint() + "/access_token"
+	r, err := http.NewRequest(http.MethodPost, accessTokenUrl, bytes.NewBuffer(payload))
 	if err != nil {
 		return token, errors.Wrap(err, "new request failed")
 	}
-
-	r.Header.Add("Content-Type", "application/json")
 
 	var c httpclient.HttpClient
 	if s.Config.HttpClientConfig != nil {
@@ -136,6 +132,7 @@ func (s *Session) getAccessToken() (string, error) {
 		c = httpclient.NewSimpleHttpClient()
 	}
 
+	r.Header.Add("Content-Type", "application/json")
 	resp, body, err := c.Do(r)
 	if err != nil {
 		return token, errors.Wrap(err, "do failed")
@@ -218,14 +215,14 @@ func New(cnf ...*Config) (*Session, error) {
 	s := &Session{Config: c}
 	if c.AccessToken != "" {
 		s.AccessToken = c.AccessToken
-	} else {
-		token, err := s.getAccessToken()
-		if err != nil {
-			return s, errors.Wrap(err, "get access token failed")
-		}
-
-		s.AccessToken = token
+		return s, nil
 	}
 
+	token, err := s.getAccessToken()
+	if err != nil {
+		return s, errors.Wrap(err, "get access token failed")
+	}
+
+	s.AccessToken = token
 	return s, nil
 }
