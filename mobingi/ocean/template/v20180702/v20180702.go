@@ -1,14 +1,16 @@
 package v20180702
 
+import "github.com/mobingi/sdk-go/mobingi/types/keyvalue"
+
 // Template defines the template structure v2018-07-02, this struct is work in progress
 type Template struct {
-	Version      string        `json:"version" yaml:"version"`
-	Name         string        `json:"name" yaml:"name"`
-	Description  string        `json:"description" yaml:"description"`
-	Labels       []KeyValue    `json:"labels" yaml:"labels"`
-	Applications []Application `json:"applications" yaml:"applications"`
-	Credentials  []Credential  `json:"credentials" yaml:"credentials"`
-	Stacks       []Stack       `json:"stacks" yaml:"stacks"`
+	Version      string              `json:"version" yaml:"version"`
+	Name         string              `json:"name" yaml:"name"`
+	Description  string              `json:"description" yaml:"description"`
+	Labels       []keyvalue.KeyValue `json:"labels" yaml:"labels"`
+	Applications []Application       `json:"applications" yaml:"applications"`
+	Credentials  []Credential        `json:"credentials" yaml:"credentials"`
+	Stacks       []Stack             `json:"stacks" yaml:"stacks"`
 }
 
 type Container struct {
@@ -18,16 +20,16 @@ type Container struct {
 
 // Application defines the application container going to run
 type Application struct {
-	Name        string      `json:"name" yaml:"name"`
-	Type        string      `json:"type" yaml:"type"`
-	Description string      `json:"description" yaml:"description"`
-	Labels      []KeyValue  `json:"labels" yaml:"labels"`
-	Containers  []Container `json:"containers" yaml:"containers"`
-	EnvVars     []KeyValue  `json:"envVars" yaml:"envVars"`
-	Ports       []int       `json:"ports" yaml:"ports"`
-	Skip        bool        `json:"skip" yaml:"skip"`
-	K8sExtra    string      `json:"k8sExtra" yaml:"k8sExtra"`
-	Stacks      []string    `json:"stacks" yaml:"stacks"`
+	Name        string              `json:"name" yaml:"name"`
+	Type        string              `json:"type" yaml:"type"`
+	Description string              `json:"description" yaml:"description"`
+	Labels      []keyvalue.KeyValue `json:"labels" yaml:"labels"`
+	Containers  []Container         `json:"containers" yaml:"containers"`
+	EnvVars     []keyvalue.KeyValue `json:"envVars" yaml:"envVars"`
+	Ports       []int               `json:"ports" yaml:"ports"`
+	Skip        bool                `json:"skip" yaml:"skip"`
+	K8sExtra    string              `json:"k8sExtra" yaml:"k8sExtra"`
+	Stacks      []string            `json:"stacks" yaml:"stacks"`
 }
 
 type Credential struct {
