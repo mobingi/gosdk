@@ -1,0 +1,27 @@
+version: "{build}"
+
+platform: x64
+
+clone_folder: c:\gopath\src\github.com\mobingi\gosdk
+
+environment:
+  GOPATH: c:\gopath
+  GOVERSION: 1.11.5
+
+install:  
+  - echo %PATH%
+  - echo %GOPATH%
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - set GO111MODULE=on
+  - go version
+  - go env
+
+build: false
+
+test_script:
+  - go test -v ./... -count=1
+
+notifications:
+  - provider: Slack
+    incoming_webhook:
+      secure: JrW1YiaNWR8kRkpmFriLtdpVPuYsQCI9Moadv4158OzGcdqzIRn4K+MAmzVQpCSIrOdiAAKoEh3ErSB/GtJqOHd4sONvvnsZwudjwL5QVZA=
