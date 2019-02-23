@@ -1,6 +1,6 @@
 package v20180702
 
-import "github.com/mobingi/sdk-go/mobingi/types/keyvalue"
+import "github.com/mobingi/gosdk/mobingi/types/keyvalue"
 
 // Template defines the template structure v2018-07-02, this struct is work in progress
 type Template struct {
