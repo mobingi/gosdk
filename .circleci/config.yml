@@ -10,5 +10,9 @@ jobs:
         name: build
         shell: /bin/bash
         command: |
-          sudo apt-get update -q && sudo apt-get install pass -y && pass init "gosdk"
+          sudo apt-get update -q && sudo apt-get install pass -y
+          gpg --import ${MOBINGIDEV_PGP_PRIVATE}
+          gpg --import ${MOBINGIDEV_PGP_PUBLIC}
+          pass init 6AAFD441DB0FC07C19C11C4655864724B5D7305D
+          echo -e "5\ny\n" | gpg --command-fd 0 --expert --edit-key 6AAFD441DB0FC07C19C11C4655864724B5D7305D trust
           GO111MODULE=on go test -v ./... -count=1
