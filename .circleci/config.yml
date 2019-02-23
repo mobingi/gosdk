@@ -10,4 +10,5 @@ jobs:
         name: build
         shell: /bin/bash
         command: |
+          sudo apt-get update -q && sudo apt-get install pkg-config -y && sudo apt-get install libsecret-1-dev -y
           GO111MODULE=on go test -v ./... -count=1
