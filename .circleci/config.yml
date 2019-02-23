@@ -11,8 +11,8 @@ jobs:
         shell: /bin/bash
         command: |
           sudo apt-get update -q && sudo apt-get install pass -y
-          gpg --import ${MOBINGIDEV_PGP_PRIVATE}
-          gpg --import ${MOBINGIDEV_PGP_PUBLIC}
+          echo "${MOBINGIDEV_PGP_PRIVATE}" > private.key && gpg --import private.key
+          echo"${MOBINGIDEV_PGP_PUBLIC}" > public.key && gpg --import public.key
           pass init 6AAFD441DB0FC07C19C11C4655864724B5D7305D
           echo -e "5\ny\n" | gpg --command-fd 0 --expert --edit-key 6AAFD441DB0FC07C19C11C4655864724B5D7305D trust
           GO111MODULE=on go test -v ./... -count=1
