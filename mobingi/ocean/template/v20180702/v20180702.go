@@ -14,8 +14,10 @@ type Template struct {
 }
 
 type Container struct {
-	Name  string `json:"name", yaml:"name"`
-	Image string `json:"image", yaml:"image"`
+	Name    string              `json:"name", yaml:"name"`
+	Image   string              `json:"image", yaml:"image"`
+	EnvVars []keyvalue.KeyValue `json:"envVars" yaml:"envVars"`
+	Ports   []int               `json:"ports" yaml:"ports"`
 }
 
 // Application defines the application container going to run
@@ -25,8 +27,6 @@ type Application struct {
 	Description string              `json:"description" yaml:"description"`
 	Labels      []keyvalue.KeyValue `json:"labels" yaml:"labels"`
 	Containers  []Container         `json:"containers" yaml:"containers"`
-	EnvVars     []keyvalue.KeyValue `json:"envVars" yaml:"envVars"`
-	Ports       []int               `json:"ports" yaml:"ports"`
 	Skip        bool                `json:"skip" yaml:"skip"`
 	K8sExtra    string              `json:"k8sExtra" yaml:"k8sExtra"`
 	Stacks      []string            `json:"stacks" yaml:"stacks"`
