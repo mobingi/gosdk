@@ -36,15 +36,32 @@ func TestNewSessionDevAcct(t *testing.T) {
 	return
 	if os.Getenv("MOBINGI_CLIENT_ID") != "" && os.Getenv("MOBINGI_CLIENT_SECRET") != "" {
 		s, err := New(&Config{
-			BaseApiUrl: "https://apidev.mobingi.com",
+			BaseApiUrl: "https://logindev.mobingi.com",
+			GrantType:  "client_credentials",
+			ApiVersion: -1, // no version
 		})
 
 		if err != nil {
 			t.Errorf("Should succeed, got %v", err)
 		}
 
-		if s.ApiEndpoint() != "https://apidev.mobingi.com/v3" {
-			t.Errorf("Invalid api url")
+		if s.AccessToken == "" {
+			t.Errorf("Should have token, got empty")
+		}
+
+		log.Println(s)
+	}
+}
+
+func TestNewSessionDevAcctOld(t *testing.T) {
+	return
+	if os.Getenv("MOBINGI_CLIENT_ID") != "" && os.Getenv("MOBINGI_CLIENT_SECRET") != "" {
+		s, err := New(&Config{
+			BaseApiUrl: "https://apidev.mobingi.com",
+		})
+
+		if err != nil {
+			t.Errorf("Should succeed, got %v", err)
 		}
 
 		if s.AccessToken == "" {

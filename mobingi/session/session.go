@@ -22,6 +22,7 @@ type authPayload struct {
 	ClientId     string      `json:"client_id,omitempty"`
 	ClientSecret string      `json:"client_secret,omitempty"`
 	GrantType    string      `json:"grant_type,omitempty"`
+	Scope        string      `json:"scope,omitempty"`
 	Username     interface{} `json:"username,omitempty"`
 	Password     interface{} `json:"password,omitempty"`
 }
@@ -34,6 +35,13 @@ type Config struct {
 	// ClientSecret is your Mobingi client secret. If empty, it will look for
 	// MOBINGI_CLIENT_SECRET environment variable.
 	ClientSecret string
+
+	// GrantType can either be 'client_credentials' or 'password'.
+	GrantType string
+
+	// Scope is the scope of the JWT being requested. For now, this is set to
+	// 'openid'.
+	Scope string
 
 	// Username is your Mobingi subuser name. If empty, it means the login grant
 	// type is 'client_credentials'.
@@ -49,7 +57,7 @@ type Config struct {
 	AccessToken string
 
 	// ApiVersion is the API version to be used in the session where this config
-	// is associated with. If zero, it will default to the latest version.
+	// is associated with. If -1, skip version resolution in endpoint.
 	ApiVersion int
 
 	// BaseApiUrl is the base API URL for this session. Default is the latest
@@ -74,7 +82,12 @@ type Session struct {
 }
 
 func (s *Session) ApiEndpoint() string {
-	return fmt.Sprintf("%s/v%d", s.Config.BaseApiUrl, s.Config.ApiVersion)
+	if s.Config.ApiVersion > -1 {
+		return fmt.Sprintf("%s/v%d", s.Config.BaseApiUrl, s.Config.ApiVersion)
+	}
+
+	// Just return the base url here.
+	return s.Config.BaseApiUrl
 }
 
 func (s *Session) RegistryEndpoint() string {
@@ -97,24 +110,51 @@ func (s *Session) SimpleAuthRequest(m, u string, body io.Reader) *http.Request {
 
 func (s *Session) getAccessToken() (string, error) {
 	var token string
-	var p authPayload
-	if s.Config.Username != "" {
-		if s.Config.Password == "" {
-			return token, errors.New("password cannot be empty")
-		}
+	var p *authPayload
+	if s.Config.Scope == "" {
+		s.Config.Scope = "openid"
+	}
 
-		p = authPayload{
+	if s.Config.GrantType == "client_credentials" {
+		p = &authPayload{
+			ClientId:     s.Config.ClientId,
+			ClientSecret: s.Config.ClientSecret,
+			GrantType:    "client_credentials",
+			Scope:        s.Config.Scope,
+		}
+	}
+
+	if s.Config.GrantType == "password" {
+		p = &authPayload{
 			ClientId:     s.Config.ClientId,
 			ClientSecret: s.Config.ClientSecret,
 			GrantType:    "password",
 			Username:     s.Config.Username,
 			Password:     s.Config.Password,
+			Scope:        s.Config.Scope,
 		}
-	} else {
-		p = authPayload{
-			ClientId:     s.Config.ClientId,
-			ClientSecret: s.Config.ClientSecret,
-			GrantType:    "client_credentials",
+	}
+
+	if p == nil {
+		// Let's try to determine the grant type based on current parameters.
+		if s.Config.Username != "" {
+			if s.Config.Password == "" {
+				return token, errors.New("password cannot be empty")
+			}
+
+			p = &authPayload{
+				ClientId:     s.Config.ClientId,
+				ClientSecret: s.Config.ClientSecret,
+				GrantType:    "password",
+				Username:     s.Config.Username,
+				Password:     s.Config.Password,
+			}
+		} else {
+			p = &authPayload{
+				ClientId:     s.Config.ClientId,
+				ClientSecret: s.Config.ClientSecret,
+				GrantType:    "client_credentials",
+			}
 		}
 	}
 
@@ -182,6 +222,14 @@ func New(cnf ...*Config) (*Session, error) {
 				c.AccessToken = cnf[0].AccessToken
 			}
 
+			if cnf[0].GrantType != "" {
+				c.GrantType = cnf[0].GrantType
+			}
+
+			if cnf[0].Scope != "" {
+				c.Scope = cnf[0].Scope
+			}
+
 			if cnf[0].Username != "" {
 				c.Username = cnf[0].Username
 			}
@@ -190,7 +238,7 @@ func New(cnf ...*Config) (*Session, error) {
 				c.Password = cnf[0].Password
 			}
 
-			if cnf[0].ApiVersion > 0 {
+			if cnf[0].ApiVersion != 0 {
 				c.ApiVersion = cnf[0].ApiVersion
 			}
 
