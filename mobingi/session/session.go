@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/mobingi/gosdk/pkg/httpclient"
@@ -71,6 +73,9 @@ type Config struct {
 	// Sesha3Url is the base URL for sesha3. Default is the latest production endpoint.
 	Sesha3Url string
 
+	// UseForm, if true, will use the form data as data input instead of JSON body.
+	UseForm bool
+
 	// HttpClientConfig will set the config for the session's http client. Do not
 	// set if you want to use http client defaults.
 	HttpClientConfig *httpclient.Config
@@ -109,73 +114,106 @@ func (s *Session) SimpleAuthRequest(m, u string, body io.Reader) *http.Request {
 }
 
 func (s *Session) getAccessToken() (string, error) {
+	var err error
 	var token string
 	var p *authPayload
+	var body []byte
+	var resp *http.Response
+	var res *httpclient.Response
+	accessTokenUrl := s.ApiEndpoint() + "/access_token"
 	if s.Config.Scope == "" {
 		s.Config.Scope = "openid"
 	}
 
-	if s.Config.GrantType == "client_credentials" {
-		p = &authPayload{
-			ClientId:     s.Config.ClientId,
-			ClientSecret: s.Config.ClientSecret,
-			GrantType:    "client_credentials",
-			Scope:        s.Config.Scope,
+	if s.Config.UseForm {
+		form := url.Values{}
+		if s.Config.GrantType == "client_credentials" {
+			form.Add("client_id", s.Config.ClientId)
+			form.Add("client_secret", s.Config.ClientSecret)
+			form.Add("grant_type", s.Config.GrantType)
+			form.Add("scope", s.Config.Scope)
 		}
-	}
 
-	if s.Config.GrantType == "password" {
-		p = &authPayload{
-			ClientId:     s.Config.ClientId,
-			ClientSecret: s.Config.ClientSecret,
-			GrantType:    "password",
-			Username:     s.Config.Username,
-			Password:     s.Config.Password,
-			Scope:        s.Config.Scope,
+		if s.Config.GrantType == "password" {
+			form.Add("client_id", s.Config.ClientId)
+			form.Add("client_secret", s.Config.ClientSecret)
+			form.Add("grant_type", s.Config.GrantType)
+			form.Add("scope", s.Config.Scope)
+			form.Add("username", s.Config.Username)
+			form.Add("password", s.Config.Password)
 		}
-	}
 
-	if p == nil {
-		// Let's try to determine the grant type based on current parameters.
-		if s.Config.Username != "" {
-			if s.Config.Password == "" {
-				return token, errors.New("password cannot be empty")
+		resp, err = http.PostForm(accessTokenUrl, form)
+		if err != nil {
+			return token, errors.Wrap(err, "do failed")
+		}
+
+		defer resp.Body.Close()
+		body, err = ioutil.ReadAll(resp.Body)
+	} else {
+		if s.Config.GrantType == "client_credentials" {
+			p = &authPayload{
+				ClientId:     s.Config.ClientId,
+				ClientSecret: s.Config.ClientSecret,
+				GrantType:    "client_credentials",
+				Scope:        s.Config.Scope,
 			}
+		}
 
+		if s.Config.GrantType == "password" {
 			p = &authPayload{
 				ClientId:     s.Config.ClientId,
 				ClientSecret: s.Config.ClientSecret,
 				GrantType:    "password",
 				Username:     s.Config.Username,
 				Password:     s.Config.Password,
-			}
-		} else {
-			p = &authPayload{
-				ClientId:     s.Config.ClientId,
-				ClientSecret: s.Config.ClientSecret,
-				GrantType:    "client_credentials",
+				Scope:        s.Config.Scope,
 			}
 		}
-	}
 
-	payload, err := json.Marshal(p)
-	accessTokenUrl := s.ApiEndpoint() + "/access_token"
-	r, err := http.NewRequest(http.MethodPost, accessTokenUrl, bytes.NewBuffer(payload))
-	if err != nil {
-		return token, errors.Wrap(err, "new request failed")
-	}
+		if p == nil {
+			// Let's try to determine the grant type based on current parameters.
+			if s.Config.Username != "" {
+				if s.Config.Password == "" {
+					return token, errors.New("password cannot be empty")
+				}
 
-	var c httpclient.HttpClient
-	if s.Config.HttpClientConfig != nil {
-		c = httpclient.NewSimpleHttpClient(s.Config.HttpClientConfig)
-	} else {
-		c = httpclient.NewSimpleHttpClient()
-	}
+				p = &authPayload{
+					ClientId:     s.Config.ClientId,
+					ClientSecret: s.Config.ClientSecret,
+					GrantType:    "password",
+					Username:     s.Config.Username,
+					Password:     s.Config.Password,
+				}
+			} else {
+				p = &authPayload{
+					ClientId:     s.Config.ClientId,
+					ClientSecret: s.Config.ClientSecret,
+					GrantType:    "client_credentials",
+				}
+			}
+		}
 
-	r.Header.Add("Content-Type", "application/json")
-	resp, body, err := c.Do(r)
-	if err != nil {
-		return token, errors.Wrap(err, "do failed")
+		payload, _ := json.Marshal(p)
+		r, err := http.NewRequest(http.MethodPost, accessTokenUrl, bytes.NewBuffer(payload))
+		if err != nil {
+			return token, errors.Wrap(err, "new request failed")
+		}
+
+		var c httpclient.HttpClient
+		if s.Config.HttpClientConfig != nil {
+			c = httpclient.NewSimpleHttpClient(s.Config.HttpClientConfig)
+		} else {
+			c = httpclient.NewSimpleHttpClient()
+		}
+
+		r.Header.Add("Content-Type", "application/json")
+		res, body, err = c.Do(r)
+		if err != nil {
+			return token, errors.Wrap(err, "do failed")
+		}
+
+		resp = res.Response
 	}
 
 	if (resp.StatusCode / 100) != 2 {
@@ -252,6 +290,10 @@ func New(cnf ...*Config) (*Session, error) {
 
 			if cnf[0].Sesha3Url != "" {
 				c.Sesha3Url = cnf[0].Sesha3Url
+			}
+
+			if cnf[0].UseForm {
+				c.UseForm = cnf[0].UseForm
 			}
 
 			if cnf[0].HttpClientConfig != nil {

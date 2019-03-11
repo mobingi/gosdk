@@ -34,11 +34,15 @@ func TestNewSession(t *testing.T) {
 
 func TestNewSessionDevAcct(t *testing.T) {
 	return
-	if os.Getenv("MOBINGI_CLIENT_ID") != "" && os.Getenv("MOBINGI_CLIENT_SECRET") != "" {
+	if os.Getenv("MOBINGI_OPENID_CLIENT_ID") != "" && os.Getenv("MOBINGI_OPENID_CLIENT_SECRET") != "" {
 		s, err := New(&Config{
-			BaseApiUrl: "https://logindev.mobingi.com",
-			GrantType:  "client_credentials",
-			ApiVersion: -1, // no version
+			ClientId:     os.Getenv("MOBINGI_OPENID_CLIENT_ID"),
+			ClientSecret: os.Getenv("MOBINGI_OPENID_CLIENT_SECRET"),
+			BaseApiUrl:   "https://logindev.mobingi.com",
+			GrantType:    "client_credentials",
+			ApiVersion:   -1, // no version
+			UseForm:      true,
+			Scope:        "openid",
 		})
 
 		if err != nil {

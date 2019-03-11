@@ -15,7 +15,8 @@ import (
 type Config struct {
 	Timeout time.Duration
 	Verbose bool
-	Logger  *log.Logger // stdout when nil, verbose should be true
+	Logger  *log.Logger  // stdout when nil, verbose should be true
+	Client  *http.Client // if provided, we use this client
 }
 
 type Response struct {
@@ -102,8 +103,13 @@ func NewSimpleHttpClient(cnf ...*Config) *simpleHttpClient {
 		}
 	}
 
+	c := http.DefaultClient
+	if cnf[0].Client != nil {
+		c = cnf[0].Client
+	}
+
 	return &simpleHttpClient{
-		client: http.DefaultClient,
+		client: c,
 		cnf:    cnf[0],
 	}
 }
