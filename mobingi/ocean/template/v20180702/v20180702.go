@@ -24,6 +24,7 @@ type Container struct {
 type Application struct {
 	Name        string              `json:"name" yaml:"name"`
 	Type        string              `json:"type" yaml:"type"`
+	Credential  string              `json:"credential" yaml:"credential"`
 	Description string              `json:"description" yaml:"description"`
 	Labels      []keyvalue.KeyValue `json:"labels" yaml:"labels"`
 	Containers  []Container         `json:"containers" yaml:"containers"`
