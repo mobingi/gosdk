@@ -59,4 +59,5 @@ type Stack struct {
 	CfnExtra     string        `json:"cfnExtra" yaml:"cfnExtra"`
 	DmExtra      string        `json:"dmExtra" yaml:"dmExtra"`
 	ArmExtra     string        `json:"armExtra" yaml:"armExtra"`
+	AliExtra     string        `json:"aliExtra" yaml:"aliExtra"`
 }
