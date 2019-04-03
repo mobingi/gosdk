@@ -38,6 +38,11 @@ type Credential struct {
 	Provider string `json:"provider" yaml:"provider"`
 }
 
+type Master struct {
+	HA        bool `json:"highlyAvailable" yaml:"highlyAvailable"`
+	NodeCount int  `json:"nodeCount" yaml:"nodeCount"`
+}
+
 type WorkerGroup struct {
 	Type    string `json:"type" yaml:"type"`
 	Min     string `json:"min" yaml:"min"`
@@ -53,7 +58,7 @@ type Stack struct {
 	Region       string        `json:"region" yaml:"region"`
 	KeyPair      bool          `json:"keyPair" yaml:"keyPair"`
 	WebShell     bool          `json:"webShell" yaml:"webShell"`
-	HA           bool          `json:"highlyAvailable" yaml:"highlyAvailable"`
+	Master       Master        `json:"master" yaml:"master"`
 	WorkerGroups []WorkerGroup `json:"workerGroups" yaml:"workerGroups"`
 	Skip         bool          `json:"skip" yaml:"skip"`
 	CfnExtra     string        `json:"cfnExtra" yaml:"cfnExtra"`
