@@ -52,17 +52,17 @@ type WorkerGroup struct {
 
 // Stack describes the infrastructures where the applications going to run
 type Stack struct {
-	Name         string        `json:"name" yaml:"name"`
-	Type         string        `json:"type" yaml:"type"`
-	Credential   string        `json:"credential" yaml:"credential"`
-	Region       string        `json:"region" yaml:"region"`
-	KeyPair      bool          `json:"keyPair" yaml:"keyPair"`
-	WebShell     bool          `json:"webShell" yaml:"webShell"`
-	Master       Master        `json:"master" yaml:"master"`
-	WorkerGroups []WorkerGroup `json:"workerGroups" yaml:"workerGroups"`
-	Skip         bool          `json:"skip" yaml:"skip"`
-	CfnExtra     string        `json:"cfnExtra" yaml:"cfnExtra"`
-	DmExtra      string        `json:"dmExtra" yaml:"dmExtra"`
-	ArmExtra     string        `json:"armExtra" yaml:"armExtra"`
-	AliExtra     string        `json:"aliExtra" yaml:"aliExtra"`
+	Name         string            `json:"name" yaml:"name"`
+	Type         string            `json:"type" yaml:"type"`
+	Credential   string            `json:"credential" yaml:"credential"`
+	Region       string            `json:"region" yaml:"region"`
+	KeyPair      bool              `json:"keyPair" yaml:"keyPair"`
+	WebShell     bool              `json:"webShell" yaml:"webShell"`
+	Master       Master            `json:"master" yaml:"master"`
+	WorkerGroups []WorkerGroup     `json:"workerGroups" yaml:"workerGroups"`
+	Skip         bool              `json:"skip" yaml:"skip"`
+	CfnExtra     string            `json:"cfnExtra" yaml:"cfnExtra"`
+	DmExtra      map[string]string `json:"dmExtra" yaml:"dmExtra"` // key = filename, value = contents
+	ArmExtra     string            `json:"armExtra" yaml:"armExtra"`
+	AliExtra     string            `json:"aliExtra" yaml:"aliExtra"`
 }
