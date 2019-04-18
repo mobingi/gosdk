@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNewSession(t *testing.T) {
+func TestNew(t *testing.T) {
 	s1, _ := New()
 	if s1 == nil {
 		t.Errorf("Expected non-nil session")
@@ -74,4 +74,38 @@ func TestNewSessionDevAcctOld(t *testing.T) {
 
 		log.Println(s)
 	}
+}
+
+func testTokenFromSession(t *testing.T, s *Session) {
+	if s == nil {
+		t.Fatal("should not be nil")
+	}
+
+	if s.AccessToken == "" {
+		t.Fatal("access token empty")
+	}
+
+	log.Println("token:", s.AccessToken)
+}
+
+func TestNewSession(t *testing.T) {
+	return
+	s1 := NewSession(
+		WithClientId(os.Getenv("MOBINGI_OPENID_CLIENT_ID")),
+		WithClientSecret(os.Getenv("MOBINGI_OPENID_CLIENT_SECRET")),
+		WithBaseLoginUrl("https://logindev.mobingi.com"),
+	)
+
+	testTokenFromSession(t, s1)
+
+	s2 := NewSession(
+		WithClientId(os.Getenv("MOBINGI_OPENID_CLIENT_ID")),
+		WithClientSecret(os.Getenv("MOBINGI_OPENID_CLIENT_SECRET")),
+		WithBaseLoginUrl("https://logindev.mobingi.com"),
+		WithGrantType("password"),
+		WithUsername(os.Getenv("MOBINGI_USERNAME")),
+		WithPassword(os.Getenv("MOBINGI_PASSWORD")),
+	)
+
+	testTokenFromSession(t, s2)
 }

@@ -18,6 +18,9 @@ const (
 	BASE_API_URL      = "https://api.mobingi.com"
 	BASE_REGISTRY_URL = "https://registry.mobingi.com"
 	SESHA3_URL        = "https://sesha3.mobingi.com"
+
+	BaseApiUrl = "https://service.mobingi.com/m"
+	LoginUrl   = "https://login.mobingi.com"
 )
 
 type authPayload struct {
@@ -81,38 +84,79 @@ type Config struct {
 	HttpClientConfig *httpclient.Config
 }
 
+type SessionOption interface {
+	Apply(*Session)
+}
+
+type withClientId string
+
+func (w withClientId) Apply(s *Session)   { s.clientId = string(w) }
+func WithClientId(v string) SessionOption { return withClientId(v) }
+
+type withClientSecret string
+
+func (w withClientSecret) Apply(s *Session)   { s.ClientSecret = string(w) }
+func WithClientSecret(v string) SessionOption { return withClientSecret(v) }
+
+type withGrantType string
+
+func (w withGrantType) Apply(s *Session)   { s.grantType = string(w) }
+func WithGrantType(v string) SessionOption { return withGrantType(v) }
+
+type withScope string
+
+func (w withScope) Apply(s *Session)   { s.scope = string(w) }
+func WithScope(v string) SessionOption { return withScope(v) }
+
+type withUsername string
+
+func (w withUsername) Apply(s *Session)   { s.username = string(w) }
+func WithUsername(v string) SessionOption { return withUsername(v) }
+
+type withPassword string
+
+func (w withPassword) Apply(s *Session)   { s.password = string(w) }
+func WithPassword(v string) SessionOption { return withPassword(v) }
+
+type withBaseLoginUrl string
+
+func (w withBaseLoginUrl) Apply(s *Session)   { s.baseLoginUrl = string(w) }
+func WithBaseLoginUrl(v string) SessionOption { return withBaseLoginUrl(v) }
+
+type withBaseApiUrl string
+
+func (w withBaseApiUrl) Apply(s *Session)   { s.baseApiUrl = string(w) }
+func WithBaseApiUrl(v string) SessionOption { return withBaseApiUrl(v) }
+
+type withHttpClient struct{ client *http.Client }
+
+func (w withHttpClient) Apply(s *Session)         { s.httpClient = w.client }
+func WithHttpClient(v *http.Client) SessionOption { return withHttpClient{v} }
+
+type withVerbose bool
+
+func (w withVerbose) Apply(s *Session) { s.verbose = bool(w) }
+func WithVerbose(v bool) SessionOption { return withVerbose(v) }
+
 type Session struct {
-	Config      *Config
-	AccessToken string
+	Config      *Config // until almv3, deprecated
+	AccessToken string  // until almv3, deprecated
+
+	version      int // should be 1 for the new session
+	clientId     string
+	ClientSecret string
+	grantType    string
+	scope        string
+	username     string
+	password     string
+	baseApiUrl   string
+	baseLoginUrl string
+	apiVersion   int
+	httpClient   *http.Client
+	verbose      bool
 }
 
-func (s *Session) ApiEndpoint() string {
-	if s.Config.ApiVersion > -1 {
-		return fmt.Sprintf("%s/v%d", s.Config.BaseApiUrl, s.Config.ApiVersion)
-	}
-
-	// Just return the base url here.
-	return s.Config.BaseApiUrl
-}
-
-func (s *Session) RegistryEndpoint() string {
-	return fmt.Sprintf("%s/v2", s.Config.BaseRegistryUrl)
-}
-
-func (s *Session) Sesha3Endpoint() string {
-	return s.Config.Sesha3Url
-}
-
-func (s *Session) SimpleAuthRequest(m, u string, body io.Reader) *http.Request {
-	req, err := http.NewRequest(m, u, body)
-	if err != nil {
-		return nil
-	}
-
-	req.Header.Add("Authorization", "Bearer "+s.AccessToken)
-	return req
-}
-
+// Deprecated, until ALMv3 only.
 func (s *Session) getAccessToken() (string, error) {
 	var err error
 	var token string
@@ -234,6 +278,79 @@ func (s *Session) getAccessToken() (string, error) {
 	return token, nil
 }
 
+func (s *Session) accessToken() (string, error) {
+	var err error
+	var token string
+	var body []byte
+	var resp *http.Response
+	accessTokenUrl := fmt.Sprintf("%s/access_token", s.baseLoginUrl)
+	form := url.Values{}
+	form.Add("client_id", s.clientId)
+	form.Add("client_secret", s.ClientSecret)
+	form.Add("grant_type", s.grantType)
+	form.Add("scope", s.scope)
+	if s.grantType == "password" {
+		form.Add("username", s.username)
+		form.Add("password", s.password)
+	}
+
+	resp, err = http.PostForm(accessTokenUrl, form)
+	if err != nil {
+		return token, errors.Wrap(err, "do failed")
+	}
+
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if (resp.StatusCode / 100) != 2 {
+		return token, errors.New(resp.Status)
+	}
+
+	var m map[string]interface{}
+	if err = json.Unmarshal(body, &m); err != nil {
+		return token, errors.Wrap(err, "unmarshal failed")
+	}
+
+	t, found := m["access_token"]
+	if !found {
+		return token, fmt.Errorf("cannot find access token")
+	}
+
+	token = fmt.Sprintf("%s", t)
+	return token, nil
+}
+
+func (s *Session) ApiEndpoint() string {
+	if s.version == 0 { // deprecated version
+		if s.Config.ApiVersion > -1 {
+			return fmt.Sprintf("%s/v%d", s.Config.BaseApiUrl, s.Config.ApiVersion)
+		}
+
+		// Just return the base url here.
+		return s.Config.BaseApiUrl
+	}
+
+	return BaseApiUrl
+}
+
+func (s *Session) RegistryEndpoint() string {
+	return fmt.Sprintf("%s/v2", s.Config.BaseRegistryUrl)
+}
+
+func (s *Session) Sesha3Endpoint() string {
+	return s.Config.Sesha3Url
+}
+
+func (s *Session) SimpleAuthRequest(m, u string, body io.Reader) *http.Request {
+	req, err := http.NewRequest(m, u, body)
+	if err != nil {
+		return nil
+	}
+
+	req.Header.Add("Authorization", "Bearer "+s.AccessToken)
+	return req
+}
+
+// Deprecated, used until ALMv3. Use the newer NewSession.
 func New(cnf ...*Config) (*Session, error) {
 	c := &Config{
 		ClientId:        os.Getenv("MOBINGI_CLIENT_ID"),
@@ -315,4 +432,29 @@ func New(cnf ...*Config) (*Session, error) {
 
 	s.AccessToken = token
 	return s, nil
+}
+
+func NewSession(o ...SessionOption) *Session {
+	s := &Session{
+		version:      1,
+		clientId:     os.Getenv("MOBINGI_CLIENT_ID"),
+		ClientSecret: os.Getenv("MOBINGI_CLIENT_SECRET"),
+		grantType:    "client_credentials",
+		scope:        "openid",
+		username:     os.Getenv("MOBINGI_USERNAME"),
+		password:     os.Getenv("MOBINGI_PASSWORD"),
+		apiVersion:   -1,
+	}
+
+	for _, opt := range o {
+		opt.Apply(s)
+	}
+
+	token, err := s.accessToken()
+	if err != nil {
+		return nil
+	}
+
+	s.AccessToken = token
+	return s
 }
