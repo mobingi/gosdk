@@ -95,7 +95,7 @@ func WithClientId(v string) SessionOption { return withClientId(v) }
 
 type withClientSecret string
 
-func (w withClientSecret) Apply(s *Session)   { s.ClientSecret = string(w) }
+func (w withClientSecret) Apply(s *Session)   { s.clientSecret = string(w) }
 func WithClientSecret(v string) SessionOption { return withClientSecret(v) }
 
 type withGrantType string
@@ -144,7 +144,7 @@ type Session struct {
 
 	version      int // should be 1 for the new session
 	clientId     string
-	ClientSecret string
+	clientSecret string
 	grantType    string
 	scope        string
 	username     string
@@ -286,7 +286,7 @@ func (s *Session) accessToken() (string, error) {
 	accessTokenUrl := fmt.Sprintf("%s/access_token", s.baseLoginUrl)
 	form := url.Values{}
 	form.Add("client_id", s.clientId)
-	form.Add("client_secret", s.ClientSecret)
+	form.Add("client_secret", s.clientSecret)
 	form.Add("grant_type", s.grantType)
 	form.Add("scope", s.scope)
 	if s.grantType == "password" {
@@ -438,7 +438,7 @@ func NewSession(o ...SessionOption) *Session {
 	s := &Session{
 		version:      1,
 		clientId:     os.Getenv("MOBINGI_CLIENT_ID"),
-		ClientSecret: os.Getenv("MOBINGI_CLIENT_SECRET"),
+		clientSecret: os.Getenv("MOBINGI_CLIENT_SECRET"),
 		grantType:    "client_credentials",
 		scope:        "openid",
 		username:     os.Getenv("MOBINGI_USERNAME"),
