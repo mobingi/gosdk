@@ -39,15 +39,16 @@ type Credential struct {
 }
 
 type Master struct {
-	HA        bool `json:"highlyAvailable" yaml:"highlyAvailable"`
-	NodeCount int  `json:"nodeCount" yaml:"nodeCount"`
+	Zones     []string `json:"zones" yaml:"zones"`
+	NodeCount int      `json:"nodeCount" yaml:"nodeCount"`
 }
 
 type WorkerGroup struct {
-	Type    string `json:"type" yaml:"type"`
-	Min     string `json:"min" yaml:"min"`
-	Max     string `json:"max" yaml:"max"`
-	LowCost bool   `json:"lowCost" yaml:"lowCost"`
+	Type    string   `json:"type" yaml:"type"`
+	Zones   []string `json:"zones" yaml:"zones"`
+	Min     string   `json:"min" yaml:"min"`
+	Max     string   `json:"max" yaml:"max"`
+	LowCost bool     `json:"lowCost" yaml:"lowCost"`
 }
 
 // Stack describes the infrastructures where the applications going to run
