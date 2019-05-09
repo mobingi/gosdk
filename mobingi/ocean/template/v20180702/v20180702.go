@@ -20,6 +20,12 @@ type Container struct {
 	Ports   []int               `json:"ports" yaml:"ports"`
 }
 
+type Service struct {
+	Type       string `json:"type", yaml:"type"`
+	Port       int    `json:"port", yaml:"port"`
+	TargetPort int    `json:"targetPort", yaml:"targetPort"`
+}
+
 // Application defines the application container going to run
 type Application struct {
 	Name        string              `json:"name" yaml:"name"`
@@ -28,6 +34,7 @@ type Application struct {
 	Description string              `json:"description" yaml:"description"`
 	Labels      []keyvalue.KeyValue `json:"labels" yaml:"labels"`
 	Containers  []Container         `json:"containers" yaml:"containers"`
+	Service     Service             `json:"service" yaml:"service"`
 	Skip        bool                `json:"skip" yaml:"skip"`
 	K8sExtra    string              `json:"k8sExtra" yaml:"k8sExtra"`
 	Stacks      []string            `json:"stacks" yaml:"stacks"`
