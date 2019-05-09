@@ -33,6 +33,9 @@ type Application struct {
 	Credential  string              `json:"credential" yaml:"credential"`
 	Description string              `json:"description" yaml:"description"`
 	Labels      []keyvalue.KeyValue `json:"labels" yaml:"labels"`
+	Replicas    uint64              `json:"replicas" yaml:"replicas"`
+	Min         uint64              `json:"min" yaml:"min"`
+	Max         uint64              `json:"max" yaml:"max"`
 	Containers  []Container         `json:"containers" yaml:"containers"`
 	Service     Service             `json:"service" yaml:"service"`
 	Skip        bool                `json:"skip" yaml:"skip"`
