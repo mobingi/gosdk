@@ -14,16 +14,16 @@ type Template struct {
 }
 
 type Container struct {
-	Name    string              `json:"name", yaml:"name"`
-	Image   string              `json:"image", yaml:"image"`
+	Name    string              `json:"name" yaml:"name"`
+	Image   string              `json:"image" yaml:"image"`
 	EnvVars []keyvalue.KeyValue `json:"envVars" yaml:"envVars"`
 	Ports   []int               `json:"ports" yaml:"ports"`
 }
 
 type Service struct {
-	Type       string `json:"type", yaml:"type"`
-	Port       int    `json:"port", yaml:"port"`
-	TargetPort int    `json:"targetPort", yaml:"targetPort"`
+	Type       string `json:"type" yaml:"type"`
+	Port       int    `json:"port" yaml:"port"`
+	TargetPort int    `json:"targetPort" yaml:"targetPort"`
 }
 
 // Application defines the application container going to run
