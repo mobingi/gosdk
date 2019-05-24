@@ -16,6 +16,7 @@ type Template struct {
 type Container struct {
 	Name    string              `json:"name" yaml:"name"`
 	Image   string              `json:"image" yaml:"image"`
+	ARGS    []string            `json:"args" yaml:"args"`
 	EnvVars []keyvalue.KeyValue `json:"envVars" yaml:"envVars"`
 	Ports   []int               `json:"ports" yaml:"ports"`
 }
