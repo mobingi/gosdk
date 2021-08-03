@@ -1,4 +1,6 @@
-** Deprecated. Unmaintained now.**
+**Deprecated. Unmaintained now.**
+
+----
 
 [![logo](./logos/mobingi-205x119.png)](https://mobingi.co.jp/)
 
